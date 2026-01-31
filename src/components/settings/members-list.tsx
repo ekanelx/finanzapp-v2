@@ -28,14 +28,16 @@ interface Member {
 interface MembersListProps {
     members: Member[]
     currentUserId: string
+    isAdmin: boolean
 }
 
-export function MembersList({ members, currentUserId }: MembersListProps) {
+export function MembersList({ members, currentUserId, isAdmin }: MembersListProps) {
     const [deletingId, setDeletingId] = useState<string | null>(null)
 
-    // Find my role
-    const myMember = members.find(m => m.user_id === currentUserId)
-    const isAdmin = myMember?.role === 'admin'
+    // Find my role (if needed for fallback, but isAdmin prop is authoritative)
+    // const myMember = members.find(m => m.user_id === currentUserId) 
+    // const isCurrentUserAdmin = myMember?.role === 'admin' 
+    // We use the prop passed from server
 
     const handleDelete = async (memberId: string) => {
         setDeletingId(memberId)

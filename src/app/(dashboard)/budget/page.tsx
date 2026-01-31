@@ -84,7 +84,7 @@ export default async function BudgetPage(props: {
     // 6. Fetch Categories (ALL for Manager, Expense for Cards)
     const { data: allCategories } = await supabase
         .from('categories')
-        .select('id, name, type, description')
+        .select('id, name, type, description, default_budget')
         .eq('household_id', activeHouseholdId)
         .order('name')
 
@@ -294,7 +294,16 @@ export default async function BudgetPage(props: {
                     {/* CATEGORY GRID */}
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {categories.map((cat) => {
-                            const budgetAmt = budgetLines[cat.id] || 0
+                            // UX: Use override (budgetLines) if available, otherwise default_budget from category
+                            const monthlyOverride = budgetLines[cat.id]
+                            // The logic: 
+                            // 1. If budgetLines has an entry, using it (even if 0, though usually means explict 0). 
+                            // But `budgetLines` map does not distinguish between "undefined" and "0" easily if undefined means not present.
+                            // In my map `budgetLines[l.category_id] = Number(l.amount)`. So if not present -> undefined.
+
+                            const hasOverride = budgetLines[cat.id] !== undefined
+                            const budgetAmt = hasOverride ? budgetLines[cat.id] : (Number(cat.default_budget) || 0)
+
                             const spentAmt = spentByCategory[cat.id] || 0
 
                             let percent = 0

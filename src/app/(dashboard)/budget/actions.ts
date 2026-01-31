@@ -168,28 +168,61 @@ export async function seedDefaultCategories() {
     return { success: true, message: `Limpieza: Borrados ${idsToDelete.length}, Creados ${toInsert.length}` }
 }
 
+// Obj B: Robust update with upsert/idempotency
 export async function updateCategoryBudget(budgetId: string, categoryId: string, amount: number) {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Unauthorized' }
 
-    // RLS should handle permissions check on budget_lines, but good practice to ensure member access
-    // For MVP, direct update.
+    // We must ensure budget existence logic if budgetId is weak, 
+    // BUT the SetCategoryBudget comp receives a budgetId. 
+    // If budgetId is empty (no budget yet for this month), we face a problem. 
+    // The previous Page logic passes `budget.id` if budget exists. 
+    // If budget is null, the Page doesn't render cards properly or `budgetId` is undefined.
+    // However, if we leverage the "Default Budget" logic, user might want to Override only one category. A budget row MUST exist for that month.
 
-    // Check if line exists? We seeded it, so it should. If not, upsert.
-    // We default scope to 'shared' for now as per MVP.
-    const { error } = await supabase
+    // Let's rely on finding/creating the Budget Header first if missing.
+    // Wait, the component currently receives `budgetId` from the page only if budget exists.
+    // If budget doesn't exist, we show "Sin Presupuesto". So `budgetId` is supposedly valid if we are rendering the card.
+    // Actually, checking `page.tsx`:
+    // `{!budget ? ( Alert ... ) : ( ... Cards ... )}`
+    // So if we see the card, `budget` object exists, so `budgetId` is valid UUID.
+
+    // Manual Upsert to handle nullable unique constraint issues
+    // 1. Check if line exists
+    const { data: existingLine } = await supabase
         .from('budget_lines')
-        .upsert({
-            budget_id: budgetId,
-            category_id: categoryId,
-            scope: 'shared',
-            amount: amount,
-            member_id: null
-        }, { onConflict: 'budget_id, category_id, scope, member_id' })
+        .select('id')
+        .eq('budget_id', budgetId)
+        .eq('category_id', categoryId)
+        .eq('scope', 'shared')
+        .is('member_id', null)
+        .maybeSingle()
+
+    let error
+    if (existingLine) {
+        // Update
+        const { error: updateError } = await supabase
+            .from('budget_lines')
+            .update({ amount })
+            .eq('id', existingLine.id)
+        error = updateError
+    } else {
+        // Insert
+        // Note: we still provide type='expense' etc.
+        const { error: insertError } = await supabase
+            .from('budget_lines')
+            .insert({
+                budget_id: budgetId,
+                category_id: categoryId,
+                amount: amount,
+                type: 'expense',
+                scope: 'shared',
+                member_id: null
+            })
+        error = insertError
+    }
 
     if (error) {
-        console.error('Update budget error:', error)
+        console.error("Error saving budget line:", error)
         return { error: error.message }
     }
 

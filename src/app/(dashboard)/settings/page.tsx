@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { redirect } from 'next/navigation'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { MembersList } from '@/components/settings/members-list'
+import { InvitationsList } from '@/components/settings/invitations-list'
 
 export default async function SettingsPage() {
     const supabase = await createClient()
@@ -30,39 +31,65 @@ export default async function SettingsPage() {
         members = data || []
     }
 
+    // Get Invitations (if Admin)
+    const { data: invitations } = await supabase
+        .from('household_invitations')
+        .select('*')
+        .eq('household_id', householdMember.household_id)
+        .order('created_at', { ascending: false })
+
+    // Check if admin to show controls
+    const isAdmin = householdMember.role === 'admin'
+
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Ajustes</h1>
-                <p className="text-muted-foreground">Configuración de tu hogar y aplicación.</p>
+            <h1 className="text-3xl font-bold tracking-tight">Ajustes</h1>
+
+            <div className="grid gap-6">
+
+                {/* Theme Settings */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Apariencia</CardTitle>
+                        <CardDescription>Personaliza la interfaz de la aplicación.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="theme-mode">Tema de la interfaz (Oscuro/Claro)</Label>
+                            <ThemeToggle />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* MEMBERS */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Miembros del Hogar</CardTitle>
+                        <CardDescription>
+                            Gestiona quién tiene acceso a este presupuesto compartido.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <MembersList
+                            members={(await supabase.from('household_members').select('*').eq('household_id', householdMember.household_id).order('joined_at')).data || []}
+                            currentUserId={user.id}
+                            isAdmin={isAdmin}
+                        />
+                    </CardContent>
+                </Card>
+
+                {/* INVITATIONS */}
+                {isAdmin && (
+                    <InvitationsList invitations={invitations || []} />
+                )}
+
             </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Miembros del Hogar</CardTitle>
-                    <CardDescription>Gestiona quién tiene acceso a este presupuesto.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <MembersList members={members} currentUserId={user.id} />
-
-                    <div className="mt-6">
-                        <Button variant="outline" className="w-full" disabled>Invitar Miembro (Prox.)</Button>
-                    </div>
-                </CardContent>
-            </Card>
-
+            {/* Preferences */}
             <Card>
                 <CardHeader>
                     <CardTitle>Preferencias</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-2 rounded-lg transition-colors">
-                        <div className="space-y-0.5">
-                            <Label>Tema</Label>
-                            <p className="text-xs text-muted-foreground">Selecciona el modo visual.</p>
-                        </div>
-                        <ThemeToggle />
-                    </div>
                     <div className="flex items-center justify-between p-2 rounded-lg transition-colors">
                         <div className="space-y-0.5">
                             <Label>Recurrencias Automáticas</Label>
@@ -72,6 +99,6 @@ export default async function SettingsPage() {
                     </div>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     )
 }

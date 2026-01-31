@@ -2,34 +2,34 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { categorySchema } from '@/lib/categories/schema'
+import { z } from 'zod'
 
-export async function createCategory(data: { name: string; type: 'income' | 'expense'; description?: string }) {
+export async function createCategory(data: any) {
     const supabase = await createClient()
+
+    // Get Household
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Unauthorized' }
+    if (!user) return { error: "No autenticado" }
 
     const { data: member } = await supabase
         .from('household_members')
         .select('household_id')
         .eq('user_id', user.id)
-        .limit(1)
-        .maybeSingle()
+        .single()
+    if (!member) return { error: "Sin hogar" }
 
-    if (!member) return { error: 'No household found' }
+    const validation = categorySchema.safeParse(data)
+    if (!validation.success) return { error: "Datos inválidos" }
 
     const { error } = await supabase
         .from('categories')
         .insert({
-            household_id: member.household_id,
-            name: data.name,
-            type: data.type,
-            description: data.description
+            ...validation.data,
+            household_id: member.household_id
         })
 
-    if (error) {
-        console.error('Create category error:', error)
-        return { error: error.message }
-    }
+    if (error) return { error: error.message }
 
     revalidatePath('/')
     revalidatePath('/budget')
@@ -37,18 +37,22 @@ export async function createCategory(data: { name: string; type: 'income' | 'exp
     return { success: true }
 }
 
-export async function updateCategory(id: string, data: { name: string; description?: string }) {
+export async function updateCategory(id: string, data: any) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
     // RLS ensures household ownership
+    // We can reuse the schema or create a partial one. 
+    // Ideally we export a separate update schema or use categorySchema.partial()
+    const updateSchema = categorySchema.partial()
+
+    const validation = updateSchema.safeParse(data)
+    if (!validation.success) return { error: "Datos inválidos" }
+
     const { error } = await supabase
         .from('categories')
-        .update({
-            name: data.name,
-            description: data.description
-        })
+        .update(validation.data)
         .eq('id', id)
 
     if (error) {
@@ -66,13 +70,6 @@ export async function deleteCategory(id: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
-
-    // Check for dependencies? 
-    // Foreign keys usually restrict delete if transactions exist unless ON DELETE CASCADE.
-    // Our schema has ON DELETE SET NULL for transactions -> category_id
-    // And ON DELETE CASCADE for budget_lines -> category_id
-    // So deletion should be safe but might leave orphans in UI if not handled.
-    // Let's proceed with deletion.
 
     const { error } = await supabase
         .from('categories')

@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Pencil } from "lucide-react"
 import { updateCategoryBudget } from "@/app/(dashboard)/budget/actions"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 interface SetCategoryBudgetProps {
     budgetId: string
@@ -27,6 +29,12 @@ export function SetCategoryBudget({ budgetId, categoryId, categoryName, currentA
     const [open, setOpen] = React.useState(false)
     const [amount, setAmount] = React.useState(currentAmount)
     const [loading, setLoading] = React.useState(false)
+    const router = useRouter() // Import needed!
+
+    // Sync if props change (revalidation)
+    React.useEffect(() => {
+        setAmount(currentAmount)
+    }, [currentAmount])
 
     async function handleSave() {
         setLoading(true)
@@ -34,9 +42,11 @@ export function SetCategoryBudget({ budgetId, categoryId, categoryName, currentA
         setLoading(false)
 
         if (result?.error) {
-            alert(`Error: ${result.error}`)
+            toast.error(`Error: ${result.error}`)
         } else {
+            toast.success("Presupuesto actualizado")
             setOpen(false)
+            router.refresh()
         }
     }
 

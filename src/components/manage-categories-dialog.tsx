@@ -27,6 +27,7 @@ interface Category {
     name: string
     type: 'income' | 'expense'
     description?: string | null
+    default_budget?: number | null // Added
 }
 
 interface ManageCategoriesDialogProps {
@@ -44,11 +45,12 @@ export function ManageCategoriesDialog({ categories }: ManageCategoriesDialogPro
     const [formData, setFormData] = React.useState({
         name: '',
         type: 'expense' as 'income' | 'expense',
-        description: ''
+        description: '',
+        default_budget: '' // Added for input control
     })
 
     const resetForm = () => {
-        setFormData({ name: '', type: 'expense', description: '' })
+        setFormData({ name: '', type: 'expense', description: '', default_budget: '' })
         setEditingId(null)
         setIsCreating(false)
     }
@@ -57,7 +59,8 @@ export function ManageCategoriesDialog({ categories }: ManageCategoriesDialogPro
         setFormData({
             name: cat.name,
             type: cat.type,
-            description: cat.description || ''
+            description: cat.description || '',
+            default_budget: cat.default_budget ? String(cat.default_budget) : ''
         })
         setEditingId(cat.id)
         setIsCreating(false)
@@ -76,13 +79,15 @@ export function ManageCategoriesDialog({ categories }: ManageCategoriesDialogPro
         if (editingId) {
             result = await updateCategory(editingId, {
                 name: formData.name,
-                description: formData.description
+                description: formData.description,
+                default_budget: formData.type === 'expense' && formData.default_budget ? parseFloat(formData.default_budget) : null
             })
         } else {
             result = await createCategory({
                 name: formData.name,
                 type: formData.type,
-                description: formData.description
+                description: formData.description,
+                default_budget: formData.type === 'expense' && formData.default_budget ? parseFloat(formData.default_budget) : null
             })
         }
         setLoading(false)
@@ -161,6 +166,21 @@ export function ManageCategoriesDialog({ categories }: ManageCategoriesDialogPro
                                     className="h-20"
                                 />
                             </div>
+
+                            {/* NEW: Default Budget for UX improvement */}
+                            {formData.type === 'expense' && (
+                                <div className="grid gap-2">
+                                    <Label>Presupuesto por Defecto (€/mes)</Label>
+                                    <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={formData.default_budget}
+                                        onChange={e => setFormData({ ...formData, default_budget: e.target.value })}
+                                    />
+                                    <p className="text-[10px] text-muted-foreground">Valor base mensual si no se especifica otro.</p>
+                                </div>
+                            )}
+
                             <Button className="w-full" onClick={handleSave} disabled={loading || !formData.name}>
                                 {loading ? 'Guardando...' : 'Guardar'}
                             </Button>

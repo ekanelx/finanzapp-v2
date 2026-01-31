@@ -54,7 +54,7 @@ export async function signup(formData: FormData) {
         email,
         password,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/callback`,
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
         }
     })
 
@@ -71,4 +71,34 @@ export async function signup(formData: FormData) {
     }
 
     return { error: 'Error desconocido al registrar.' }
+}
+
+export async function resetPasswordForEmail(email: string) {
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/auth/reset-password`,
+    })
+
+    if (error) {
+        console.error('Reset password error:', error.message)
+        return { error: error.message }
+    }
+
+    return { success: true, message: 'Si el email existe, recibirás un enlace de recuperación.' }
+}
+
+export async function updatePassword(password: string) {
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.updateUser({
+        password: password
+    })
+
+    if (error) {
+        return { error: "Error al actualizar la contraseña: " + error.message }
+    }
+
+    revalidatePath('/', 'layout')
+    redirect('/')
 }
