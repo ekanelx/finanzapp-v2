@@ -1,9 +1,5 @@
-
-import Link from 'next/link'
-import { Home, PieChart, ArrowRightLeft, Target, Settings, Plus, TrendingUp } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { LogoutButton } from '@/components/logout-button'
 import { DashboardNav } from '@/components/dashboard-nav'
-import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function DashboardLayout({
     children,
@@ -23,13 +19,8 @@ export default function DashboardLayout({
                 <nav className="flex flex-col gap-2">
                     <DashboardNav />
                 </nav>
-                <div className="mt-auto px-2 mb-2">
-                    <ThemeToggle />
-                </div>
-                <div className="">
-                    <Button className="w-full gap-2">
-                        <Plus className="h-4 w-4" /> Nuevo Gasto
-                    </Button>
+                <div className="mt-auto px-2 mb-2 space-y-2">
+                    <LogoutButton />
                 </div>
             </aside>
 

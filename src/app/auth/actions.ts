@@ -50,15 +50,25 @@ export async function signup(formData: FormData) {
         return { error: 'Invalid input' }
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/callback`,
+        }
     })
 
     if (error) {
         return { error: error.message }
     }
 
-    revalidatePath('/', 'layout')
-    redirect('/onboarding')
+    if (data.session) {
+        revalidatePath('/', 'layout')
+        redirect('/onboarding')
+    } else if (data.user) {
+        // User created but no session -> Email confirmation required
+        return { error: 'Revisa tu email para confirmar la cuenta.' }
+    }
+
+    return { error: 'Error desconocido al registrar.' }
 }
