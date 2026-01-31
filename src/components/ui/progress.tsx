@@ -4,12 +4,18 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 
 import { cn } from "@/lib/utils"
 
+interface ProgressProps extends ProgressPrimitive.Root.Props {
+  // Added indicatorClassName to facilitate dynamic color classes (e.g. in Budget bars)
+  indicatorClassName?: string
+}
+
 function Progress({
   className,
+  indicatorClassName,
   children,
   value,
   ...props
-}: ProgressPrimitive.Root.Props) {
+}: ProgressProps) {
   return (
     <ProgressPrimitive.Root
       value={value}
@@ -19,7 +25,7 @@ function Progress({
     >
       {children}
       <ProgressTrack>
-        <ProgressIndicator />
+        <ProgressIndicator className={indicatorClassName} />
       </ProgressTrack>
     </ProgressPrimitive.Root>
   )

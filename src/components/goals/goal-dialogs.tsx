@@ -90,13 +90,13 @@ export function ManageGoalDialog({
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {trigger || (
+            <DialogTrigger
+                render={(trigger as React.ReactElement) || (
                     <Button>
                         <Plus className="mr-2 h-4 w-4" /> Nueva Meta
                     </Button>
                 )}
-            </DialogTrigger>
+            />
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>{isEdit ? "Editar Meta" : "Nueva Meta"}</DialogTitle>
@@ -174,13 +174,13 @@ export function GoalTransactionDialog({
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {trigger || (
+            <DialogTrigger
+                render={(trigger as React.ReactElement) || (
                     <Button variant={isDeposit ? "default" : "destructive"} size="sm">
                         {isDeposit ? <Plus className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
                     </Button>
                 )}
-            </DialogTrigger>
+            />
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>{isDeposit ? "Aportar Dinero" : "Retirar Dinero"}</DialogTitle>
@@ -203,7 +203,7 @@ export function GoalTransactionDialog({
                     </div>
                     <div className="space-y-2">
                         <Label>Miembro</Label>
-                        <Select value={memberId} onValueChange={setMemberId}>
+                        <Select value={memberId} onValueChange={(val) => val && setMemberId(val)}>
                             <SelectTrigger>
                                 <SelectValue placeholder="¿Quién hace la operación?" />
                             </SelectTrigger>
@@ -262,11 +262,11 @@ export function GoalHistoryDialog({
 }) {
     return (
         <Dialog>
-            <DialogTrigger asChild>
-                {trigger || (
+            <DialogTrigger
+                render={(trigger as React.ReactElement) || (
                     <Button variant="outline" size="sm">Ver Historial</Button>
                 )}
-            </DialogTrigger>
+            />
             <DialogContent className="max-w-xl max-h-[80vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Historial de {goalName}</DialogTitle>

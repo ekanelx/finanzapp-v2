@@ -44,12 +44,14 @@ export function SetCategoryBudget({ budgetId, categoryId, categoryName, currentA
     // For now, let's use a small Edit icon button
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <Pencil className="h-3 w-3" />
-                    <span className="sr-only">Editar presupuesto</span>
-                </Button>
-            </DialogTrigger>
+            <DialogTrigger
+                render={
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <Pencil className="h-3 w-3" />
+                        <span className="sr-only">Editar presupuesto</span>
+                    </Button>
+                }
+            />
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Ajustar Presupuesto</DialogTitle>

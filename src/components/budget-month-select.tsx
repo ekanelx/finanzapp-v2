@@ -29,7 +29,7 @@ export function BudgetMonthSelect({ availableMonths, currentMonth }: BudgetMonth
     // We'll trust the parent passes strictly used months.
 
     return (
-        <Select value={currentMonth} onValueChange={handleValueChange}>
+        <Select value={currentMonth} onValueChange={(val) => val && handleValueChange(val)}>
             <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Seleccionar mes" />
             </SelectTrigger>

@@ -103,12 +103,14 @@ export function ManageCategoriesDialog({ categories }: ManageCategoriesDialogPro
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                    <Settings2 className="h-4 w-4" />
-                    Gestionar Categorías
-                </Button>
-            </DialogTrigger>
+            <DialogTrigger
+                render={
+                    <Button variant="outline" size="sm" className="gap-2">
+                        <Settings2 className="h-4 w-4" />
+                        Gestionar Categorías
+                    </Button>
+                }
+            />
             <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Gestionar Categorías</DialogTitle>
@@ -140,7 +142,7 @@ export function ManageCategoriesDialog({ categories }: ManageCategoriesDialogPro
                                     <Label>Tipo</Label>
                                     <Select
                                         value={formData.type}
-                                        onValueChange={(v: 'income' | 'expense') => setFormData({ ...formData, type: v })}
+                                        onValueChange={(v) => v && setFormData({ ...formData, type: v as 'income' | 'expense' })}
                                     >
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
