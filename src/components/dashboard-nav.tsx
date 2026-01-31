@@ -7,9 +7,9 @@ import { Home, PieChart, ArrowRightLeft, Target, Settings, TrendingUp } from 'lu
 export function DashboardNav({ mobile = false }: { mobile?: boolean }) {
     const pathname = usePathname()
     const links = [
-        { href: '/', label: 'Home', icon: Home },
+        { href: '/', label: 'Dashboard', icon: Home },
         { href: '/budget', label: 'Presupuesto', icon: PieChart },
-        { href: '/transactions', label: 'Transac.', icon: ArrowRightLeft },
+        { href: '/transactions', label: 'Movimientos', icon: ArrowRightLeft },
         { href: '/investments', label: 'Inversiones', icon: TrendingUp },
         { href: '/goals', label: 'Metas', icon: Target },
         { href: '/settings', label: 'Ajustes', icon: Settings },

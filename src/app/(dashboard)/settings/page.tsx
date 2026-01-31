@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { redirect } from 'next/navigation'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { ThemeSelector } from '@/components/settings/theme-selector'
 import { MembersList } from '@/components/settings/members-list'
 import { InvitationsList } from '@/components/settings/invitations-list'
 
@@ -54,9 +54,9 @@ export default async function SettingsPage() {
                         <CardDescription>Personaliza la interfaz de la aplicación.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center justify-between">
-                            <Label htmlFor="theme-mode">Tema de la interfaz (Oscuro/Claro)</Label>
-                            <ThemeToggle />
+                        <div className="flex flex-col gap-4">
+                            <Label htmlFor="theme-mode" className="text-base">Tema de la interfaz</Label>
+                            <ThemeSelector />
                         </div>
                     </CardContent>
                 </Card>

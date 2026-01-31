@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,9 @@ export function LoginForm() {
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
     const [envCheck, setEnvCheck] = useState<boolean | null>(null)
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const next = searchParams.get('next')
+
     const supabase = createClient()
 
     useEffect(() => {
@@ -33,6 +36,7 @@ export function LoginForm() {
         const formData = new FormData(e.currentTarget)
         const email = formData.get("email") as string
         const password = formData.get("password") as string
+        // next is already in formData as hidden input
 
         if (!email || !password) {
             const msg = "Email y contraseña requeridos"
@@ -53,7 +57,7 @@ export function LoginForm() {
                 toast.error(error.message)
                 setErrorMsg(error.message)
             } else {
-                router.replace("/")
+                router.replace(next || "/")
                 router.refresh()
             }
         } catch (err: any) {
@@ -72,6 +76,11 @@ export function LoginForm() {
         if (!form) return
 
         const formData = new FormData(form)
+        // Ensure next is appended if missing from form (it should be there via hidden input)
+        if (next && !formData.get('next')) {
+            formData.append('next', next)
+        }
+
         setLoading(true)
         const res = await signup(formData)
         setLoading(false)
@@ -96,6 +105,7 @@ export function LoginForm() {
             </CardHeader>
             <CardContent className="grid gap-4">
                 <form className="grid gap-4" onSubmit={handleLogin}>
+                    <input type="hidden" name="next" value={next || ''} />
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email</Label>
                         <Input id="email" name="email" type="email" placeholder="m@ejemplo.com" required />
@@ -103,6 +113,9 @@ export function LoginForm() {
                     <div className="grid gap-2">
                         <Label htmlFor="password">Contraseña</Label>
                         <Input id="password" name="password" type="password" required />
+                        <div className="text-right">
+                            <a href="/auth/forgot-password" className="text-xs text-muted-foreground hover:underline">Olvidé mi contraseña</a>
+                        </div>
                     </div>
 
                     <div className="flex flex-col gap-2">

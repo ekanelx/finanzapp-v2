@@ -9,7 +9,8 @@ export async function acceptInvitation(token: string) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        return { error: 'Not authenticated', redirect: `/auth/login?next=/invite/accept?token=${token}` }
+        const nextUrl = `/invite/accept?token=${token}`
+        return { error: 'Not authenticated', redirect: `/auth/login?next=${encodeURIComponent(nextUrl)}` }
     }
 
     const tokenHash = createHash('sha256').update(token).digest('hex')
@@ -65,6 +66,22 @@ export async function acceptInvitation(token: string) {
     if (insertError) {
         console.error('Accept invite insert error', insertError)
         return { error: 'Error al unirte al hogar.' }
+    }
+
+    // 4. (Feature Flag) 1-Household Rule
+    const invitesV2 = process.env.INVITES_V2_ENABLED === 'true'
+
+    if (invitesV2) {
+        // Delete memberships where user_id = me AND household_id != new_id
+        const { error: cleanupError } = await supabase
+            .from('household_members')
+            .delete()
+            .eq('user_id', user.id)
+            .neq('household_id', invitation.household_id)
+
+        if (cleanupError) {
+            console.warn('Cleanup other households error:', cleanupError)
+        }
     }
 
     // Mark accepted

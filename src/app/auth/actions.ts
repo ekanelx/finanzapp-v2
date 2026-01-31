@@ -14,7 +14,7 @@ const authSchema = z.object({
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
-    // Validate data
+    const next = formData.get('next') as string || '/'
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
@@ -34,7 +34,7 @@ export async function login(formData: FormData) {
     }
 
     revalidatePath('/', 'layout')
-    redirect('/')
+    redirect(next)
 }
 
 
@@ -44,6 +44,7 @@ export async function signup(formData: FormData) {
     // Validate data
     const email = formData.get('email') as string
     const password = formData.get('password') as string
+    const next = formData.get('next') as string || '/onboarding'
 
     const validation = authSchema.safeParse({ email, password })
     if (!validation.success) {
@@ -54,7 +55,7 @@ export async function signup(formData: FormData) {
         email,
         password,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback${next && next !== '/' ? `?next=${encodeURIComponent(next)}` : ''}`,
         }
     })
 
@@ -64,7 +65,7 @@ export async function signup(formData: FormData) {
 
     if (data.session) {
         revalidatePath('/', 'layout')
-        redirect('/onboarding')
+        redirect(next)
     } else if (data.user) {
         // User created but no session -> Email confirmation required
         return { error: 'Revisa tu email para confirmar la cuenta.' }

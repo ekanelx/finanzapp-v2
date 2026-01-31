@@ -90,7 +90,7 @@ export function TransactionForm({ categories = [], existingTransaction, trigger 
                 </div>
             ) : (
                 <Button className="gap-2 text-primary-foreground font-semibold" onClick={() => setOpen(true)}>
-                    <Plus className="h-4 w-4" /> Nuevo Movimiento
+                    <Plus className="h-4 w-4" /> Añadir Movimiento
                 </Button>
             )}
 
