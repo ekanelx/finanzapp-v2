@@ -40,13 +40,18 @@ export async function updateSession(request: NextRequest) {
     if (
         !user &&
         !request.nextUrl.pathname.startsWith('/auth') &&
-        !request.nextUrl.pathname.startsWith('/onboarding')
+        !request.nextUrl.pathname.startsWith('/onboarding') &&
+        !request.nextUrl.pathname.startsWith('/api/_diag') && // Allow server diagnostics
+        !request.nextUrl.pathname.startsWith('/diag') // Allow client diagnostics
     ) {
         // no user, potentially redirect to login
-        // allow public access for now or redirect
+        console.log('[Middleware] No user found, redirecting to login from:', request.nextUrl.pathname)
         const url = request.nextUrl.clone()
         url.pathname = '/auth/login'
         return NextResponse.redirect(url)
+    } else if (user) {
+        // Log successful session check for debugging
+        // console.log('[Middleware] User authenticated:', user.id)
     }
 
     // Checking membership logic (requested by User: "si hay sesión pero no tiene household_members -> /onboarding")
