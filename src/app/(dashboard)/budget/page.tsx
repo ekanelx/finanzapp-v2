@@ -11,6 +11,41 @@ import { BudgetMonthSelect } from '@/components/budget-month-select'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 
+
+type CategoryRow = {
+    id: string
+    name: string
+    type: 'income' | 'expense'
+    description?: string | null
+    default_budget?: number | null
+    budget_period_months?: number | null
+    sort_order?: number | null
+}
+
+async function fetchCategoriesWithFallback(supabase: Awaited<ReturnType<typeof createClient>>, householdId: string) {
+    const extended = await supabase
+        .from('categories')
+        .select('id, name, type, description, default_budget, budget_period_months, sort_order')
+        .eq('household_id', householdId)
+        .order('sort_order', { ascending: true })
+
+    if (!extended.error) {
+        return (extended.data || []) as CategoryRow[]
+    }
+
+    const fallback = await supabase
+        .from('categories')
+        .select('id, name, type, description, default_budget')
+        .eq('household_id', householdId)
+        .order('name', { ascending: true })
+
+    return ((fallback.data || []) as CategoryRow[]).map((c, idx) => ({
+        ...c,
+        budget_period_months: 1,
+        sort_order: idx + 1,
+    }))
+}
+
 function monthStartStr(date: Date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`
 }
@@ -79,11 +114,7 @@ export default async function BudgetPage(props: {
         .eq('month', selectedMonthStr)
         .maybeSingle()
 
-    const { data: allCategories } = await supabase
-        .from('categories')
-        .select('id, name, type, description, default_budget, budget_period_months, sort_order')
-        .eq('household_id', activeHouseholdId)
-        .order('sort_order', { ascending: true })
+    const allCategories = await fetchCategoriesWithFallback(supabase, activeHouseholdId)
 
     const categories = (allCategories || [])
         .filter(c => c.type === 'expense')
