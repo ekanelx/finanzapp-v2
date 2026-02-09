@@ -30,6 +30,7 @@ interface EditContributionDialogProps {
         amount: number
         date: string
         member_id: string
+        type?: string
     }
     members: {
         household_member_id: string
@@ -44,6 +45,7 @@ export function EditContributionDialog({ open, onOpenChange, contribution, membe
     const [amount, setAmount] = React.useState(contribution.amount)
     const [date, setDate] = React.useState(contribution.date)
     const [memberId, setMemberId] = React.useState(contribution.member_id)
+    const [type, setType] = React.useState(contribution.type || 'deposit')
 
     // Update state when contribution changes or dialog opens
     React.useEffect(() => {
@@ -51,6 +53,7 @@ export function EditContributionDialog({ open, onOpenChange, contribution, membe
             setAmount(contribution.amount)
             setDate(contribution.date)
             setMemberId(contribution.member_id)
+            setType(contribution.type || 'deposit')
         }
     }, [open, contribution])
 
@@ -62,7 +65,8 @@ export function EditContributionDialog({ open, onOpenChange, contribution, membe
             id: contribution.id,
             amount: Number(amount),
             date,
-            memberId
+            memberId,
+            type
         })
 
         setLoading(false)
@@ -87,6 +91,19 @@ export function EditContributionDialog({ open, onOpenChange, contribution, membe
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-type">Tipo</Label>
+                            <Select value={type} onValueChange={(v) => v && setType(v)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="deposit">Aportación</SelectItem>
+                                    <SelectItem value="withdrawal">Retirada</SelectItem>
+                                    <SelectItem value="yield">Rendimiento / Dividendo</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="grid gap-2">
                             <Label htmlFor="edit-member">Miembro</Label>
                             <Select value={memberId} onValueChange={(v) => v && setMemberId(v)}>

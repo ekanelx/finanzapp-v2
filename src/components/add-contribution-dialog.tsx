@@ -37,6 +37,7 @@ export function AddContributionDialog({ productId, productName, members, current
     const [amount, setAmount] = React.useState("")
     const [date, setDate] = React.useState(new Date().toISOString().split('T')[0])
     const [memberId, setMemberId] = React.useState(currentMemberId)
+    const [type, setType] = React.useState('deposit')
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +48,8 @@ export function AddContributionDialog({ productId, productName, members, current
             productId,
             memberId,
             amount: parseFloat(amount),
-            date
+            date,
+            type
         })
 
         setLoading(false)
@@ -60,6 +62,7 @@ export function AddContributionDialog({ productId, productName, members, current
         toast.success("Aportación registrada")
         setOpen(false)
         setAmount("")
+        setType("deposit")
         router.refresh()
     }
 
@@ -77,6 +80,19 @@ export function AddContributionDialog({ productId, productName, members, current
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="type">Tipo</Label>
+                            <Select value={type} onValueChange={(v) => v && setType(v)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="deposit">Aportación</SelectItem>
+                                    <SelectItem value="withdrawal">Retirada</SelectItem>
+                                    <SelectItem value="yield">Rendimiento / Dividendo</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="grid gap-2">
                             <Label htmlFor="member">Miembro</Label>
                             <Select value={memberId} onValueChange={(val) => val && setMemberId(val)}>

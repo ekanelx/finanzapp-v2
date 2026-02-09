@@ -107,6 +107,10 @@ create table public.investment_products (
   household_id uuid references public.households(id) on delete cascade not null,
   name text not null,
   platform text,
+  category text check (category in ('crypto', 'stock', 'fi', 'real_estate', 'other')) default 'other',
+  symbol text,
+  fixed_rate numeric(10, 4),
+  current_balance numeric(15, 2),
   created_at timestamp with time zone default now()
 );
 
@@ -118,6 +122,7 @@ create table public.investment_contributions (
   member_id uuid references public.household_members(id) on delete cascade not null,
   date date not null default current_date,
   amount numeric(10, 2) not null check (amount > 0),
+  type text check (type in ('deposit', 'withdrawal', 'yield')) default 'deposit',
   created_at timestamp with time zone default now()
 );
 create index idx_investment_products_household on public.investment_products(household_id);

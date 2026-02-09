@@ -63,6 +63,7 @@ export function ContributionsTable({ contributions, members }: ContributionsTabl
                     <TableHeader>
                         <TableRow>
                             <TableHead>Fecha</TableHead>
+                            <TableHead>Tipo</TableHead>
                             <TableHead>Miembro</TableHead>
                             <TableHead className="text-right">Cantidad</TableHead>
                             <TableHead className="w-[100px] text-right">Acciones</TableHead>
@@ -71,6 +72,10 @@ export function ContributionsTable({ contributions, members }: ContributionsTabl
                     <TableBody>
                         {contributions?.map((c) => {
                             const mName = members.find(m => m.household_member_id === c.member_id)?.name || '...'
+                            const isYield = c.type === 'yield'
+                            const isWithdrawal = c.type === 'withdrawal'
+                            const isDeposit = !c.type || c.type === 'deposit'
+
                             return (
                                 <TableRow key={c.id} className="group">
                                     <TableCell className="font-medium">
@@ -79,9 +84,14 @@ export function ContributionsTable({ contributions, members }: ContributionsTabl
                                             {new Date(c.date).toLocaleDateString()}
                                         </div>
                                     </TableCell>
+                                    <TableCell>
+                                        {isYield && <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Rendimiento</span>}
+                                        {isWithdrawal && <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">Retirada</span>}
+                                        {isDeposit && <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Aportación</span>}
+                                    </TableCell>
                                     <TableCell>{mName}</TableCell>
-                                    <TableCell className="text-right font-bold text-green-600">
-                                        +€{Number(c.amount).toLocaleString()}
+                                    <TableCell className={`text-right font-bold ${isWithdrawal ? 'text-red-600' : 'text-green-600'}`}>
+                                        {isWithdrawal ? '-' : '+'}€{Number(c.amount).toLocaleString()}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -108,8 +118,8 @@ export function ContributionsTable({ contributions, members }: ContributionsTabl
                         })}
                         {(!contributions || contributions.length === 0) && (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
-                                    No hay aportaciones todavía. ¡Empieza hoy!
+                                <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                                    No hay movimientos todavía.
                                 </TableCell>
                             </TableRow>
                         )}
