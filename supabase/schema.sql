@@ -32,6 +32,9 @@ create table public.categories (
   name text not null,
   type text check (type in ('income', 'expense')) not null,
   icon text,
+  default_budget numeric default 0,
+  budget_period_months integer not null default 1 check (budget_period_months in (1, 2, 3, 12)),
+  sort_order integer,
   created_at timestamp with time zone default now()
 );
 
