@@ -103,15 +103,15 @@ export async function seedDefaultCategories() {
     const householdId = member.household_id
 
     const defaults = [
-        { name: 'Vivienda', type: 'expense' },
-        { name: 'Alimentación', type: 'expense' },
-        { name: 'Transporte', type: 'expense' },
-        { name: 'Ocio', type: 'expense' },
-        { name: 'Salud', type: 'expense' },
-        { name: 'Educación', type: 'expense' },
-        { name: 'Ahorro', type: 'expense' },
-        { name: 'Salario', type: 'income' },
-        { name: 'Inversiones', type: 'income' },
+        { name: 'Vivienda', type: 'expense', sort_order: 1 },
+        { name: 'Alimentación', type: 'expense', sort_order: 2 },
+        { name: 'Transporte', type: 'expense', sort_order: 3 },
+        { name: 'Ocio', type: 'expense', sort_order: 4 },
+        { name: 'Salud', type: 'expense', sort_order: 5 },
+        { name: 'Educación', type: 'expense', sort_order: 6 },
+        { name: 'Ahorro', type: 'expense', sort_order: 7 },
+        { name: 'Salario', type: 'income', sort_order: 1 },
+        { name: 'Inversiones', type: 'income', sort_order: 2 },
     ]
 
     // 1. Fetch Existing
@@ -150,7 +150,8 @@ export async function seedDefaultCategories() {
         .filter(d => !existingNames.has(d.name))
         .map(d => ({
             ...d,
-            household_id: householdId
+            household_id: householdId,
+            budget_period_months: 1
         }))
 
     if (toInsert.length > 0) {

@@ -1,45 +1,53 @@
 "use client"
 
-import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
 interface BudgetMonthSelectProps {
-    availableMonths: string[] // 'YYYY-MM-DD'
+    availableMonths: string[]
     currentMonth: string
+    periodMonths: number
 }
 
-export function BudgetMonthSelect({ availableMonths, currentMonth }: BudgetMonthSelectProps) {
+export function BudgetMonthSelect({ availableMonths, currentMonth, periodMonths }: BudgetMonthSelectProps) {
     const router = useRouter()
+    const params = useSearchParams()
 
-    const handleValueChange = (val: string) => {
-        router.push(`/budget?month=${val}`)
+    const pushWith = (month: string, period: number) => {
+        const sp = new URLSearchParams(params.toString())
+        sp.set('month', month)
+        sp.set('period', String(period))
+        router.push(`/budget?${sp.toString()}`)
     }
 
-    // Ensure current month is in the list (if it's a new month not yet in DB, we handle it visually or push it)
-    // But usually availableMonths comes from DB. 
-    // We'll trust the parent passes strictly used months.
-
     return (
-        <Select value={currentMonth} onValueChange={(val) => val && handleValueChange(val)}>
-            <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Seleccionar mes" />
-            </SelectTrigger>
-            <SelectContent>
-                {availableMonths.map((m) => (
-                    <SelectItem key={m} value={m}>
-                        {format(new Date(m), "MMMM yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+            <Select value={currentMonth} onValueChange={(val) => val && pushWith(val, periodMonths)}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Seleccionar mes" />
+                </SelectTrigger>
+                <SelectContent>
+                    {availableMonths.map((m) => (
+                        <SelectItem key={m} value={m}>
+                            {format(new Date(m), "MMMM yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
+            <Select value={String(periodMonths)} onValueChange={(val) => pushWith(currentMonth, Number(val))}>
+                <SelectTrigger className="w-[170px]">
+                    <SelectValue placeholder="Periodicidad" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="1">Último mes</SelectItem>
+                    <SelectItem value="2">Últimos 2 meses</SelectItem>
+                    <SelectItem value="3">Últimos 3 meses</SelectItem>
+                    <SelectItem value="12">Últimos 12 meses</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
     )
 }
